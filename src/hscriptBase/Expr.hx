@@ -44,7 +44,7 @@ enum ExprDef {
 	EStatic( e : Expr , ?inPublic : Bool );
 	EConst( c : Const );
 	EIdent( v : String );
-	EVar( n : String, finall : Bool , ?t : CType, ?e : Expr ,  );
+	EVar( n : String, finall : Bool , ?t : CType, ?e : Expr );
 	EParent( e : Expr );
 	EBlock( e : Array<Expr> );
 	EField( e : Expr, f : String );
