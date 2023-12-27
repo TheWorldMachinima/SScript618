@@ -579,7 +579,7 @@ class Interp {
 			if( field != null && (specialObject.includeFunctions || Type.typeof(field) != TFunction) && (specialObject.exclusions == null || !specialObject.exclusions.contains(id)) )
 				return field;
 		}
-		else if( STATICPACKAGES.exists(id) )
+		if( STATICPACKAGES.exists(id) )
 			return STATICPACKAGES[id];
 		var v = finalVariables.get(id);
 		if( finalVariables.exists(id) )
