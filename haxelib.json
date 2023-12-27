@@ -1,0 +1,13 @@
+{
+  "name": "SScript618",
+  "url": "https://github.com/TheWorldMachinima/SScript618",
+  "license": "Apache",
+  "tags": ["hscript", "sscript"],
+  "description": "An easy-to-use Haxe Script tool for all targets.",
+  "version": "6.1.8",
+  "classPath": "src/",
+  "releasenote": "SuperlativeScript release 618",
+  "contributors": ["TheWorldMachinima"],
+  "dependencies": {
+  }
+}
