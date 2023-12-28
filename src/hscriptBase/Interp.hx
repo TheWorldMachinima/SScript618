@@ -794,7 +794,7 @@ class Interp {
 		case EImportStar(pkg):
 			pkg = pkg.trim();
 			var c = Type.resolveClass(pkg);
-			var en = Type.resolveClass(pkg);
+			var en = Type.resolveEnum(pkg);
 			if( c != null )
 			{
 				var fields = Reflect.fields(c);
@@ -802,7 +802,7 @@ class Interp {
 				{
 					var f = Reflect.getProperty(c,field);
 					if( f != null )
-						variables.set(field,f);
+						finalVariables.set(field,f);
 				}
 			}
 			else if( en != null ) 
@@ -812,7 +812,7 @@ class Interp {
 				{
 					var f = Reflect.field(en, field);
 					if( f != null ) 
-						variables.set(field,f);
+						finalVariables.set(field,f);
 				}
 			}
 			else 
@@ -844,21 +844,21 @@ class Interp {
 				}
 
 				for( i => k in cl )
-					variables[i] = k;
+					finalVariables[i] = k;
 				#end
 			}
 
 			return null;
 		case EImport( e, c , _ ):
 			if( c != null && e != null )
-				variables.set( c , e );
+				finalVariables.set( c , e );
 
 			return null;
 		case EUsing( e, c ):
 			var stringTools = c == 'StringTools' && e == StringTools;
 
 			if( c != null && e != null && !stringTools )
-				variables.set( c , e );
+				finalVariables.set( c , e );
 			if( stringTools )
 				usingStringTools = true;
 
