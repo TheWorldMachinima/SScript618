@@ -440,6 +440,8 @@ class ToprakScript
 	{
 		if (_destroyed)
 			return null;
+		if (interp == null)
+			return null;
 		if (!active)
 			return this;
 		if (obj == null)

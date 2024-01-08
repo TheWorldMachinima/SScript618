@@ -551,9 +551,9 @@ class Interp {
 		if(resumeError)return null;
 		if( curExpr == null )
 			curExpr = { origin: {
-				if (script.customOrigin != null && script.customOrigin.length > 0)
+				if(script.customOrigin != null && script.customOrigin.length > 0)
 					script.customOrigin;
-				else if (script.scriptFile != null && script.scriptFile.length > 0)
+				else if(script.scriptFile != null && script.scriptFile.length > 0)
 					script.scriptFile;
 				else 
 					"ToprakScript";
@@ -863,10 +863,12 @@ class Interp {
 			}
 
 			return if( strictVar ) error(EUnexpected("import")) else null;
-		case EImport( e, c , _ ):
+		case EImport( e, c , _ , f ):
 			if( c != null && e != null )
 				finalVariables.set( c , e );
-
+			if( e == null && f != null )
+				error(ECustom("Type not found : " + f));
+				
 			return if( strictVar ) error(EUnexpected("import")) else null;
 		case EUsing( e, c ):
 			var stringTools = c == 'StringTools' && e == StringTools;
@@ -1137,11 +1139,11 @@ class Interp {
 				if( n == null ) {
 					if( Std.isOfType(ec,Int) )
 						n = 'Int';
-					else if ( Std.isOfType(ec,Float) )
+					else if( Std.isOfType(ec,Float) )
 						n = 'Float';
-					else if ( Std.isOfType(ec,String) )
+					else if( Std.isOfType(ec,String) )
 						n = 'String';
-					else if ( Std.isOfType(ec,Array) )
+					else if( Std.isOfType(ec,Array) )
 						n = 'Array';
 				}
 				if( n != null ) error(ECustom(n + ' should be Bool'));
@@ -1179,11 +1181,11 @@ class Interp {
 				if( n == null ) {
 					if( Std.isOfType(ec,Int) )
 						n = 'Int';
-					else if ( Std.isOfType(ec,Float) )
+					else if( Std.isOfType(ec,Float) )
 						n = 'Float';
-					else if ( Std.isOfType(ec,String) )
+					else if( Std.isOfType(ec,String) )
 						n = 'String';
-					else if ( Std.isOfType(ec,Array) )
+					else if( Std.isOfType(ec,Array) )
 						n = 'Array';
 				}
 				if( n != null ) error(ECustom(n + ' should be Bool'));

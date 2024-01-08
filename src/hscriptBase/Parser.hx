@@ -931,6 +931,9 @@ class Parser {
 				t = token();
 				switch( t ) {
 				case TId(id):
+					if( notAllowedFieldNames.contains(id) )
+						unexpected(TId(id));
+					
 					path.push(id);
 				case TOp('*'):
 					isStar = true;
@@ -1008,7 +1011,7 @@ class Parser {
 				property = Reflect.getProperty(property, cl);
 				if(usedAs)
 					cl=asIdent;
-				EImport( property, cl , usedAs ? asIdent : null );
+				EImport( property, cl , usedAs ? asIdent : null , anPath[0]);
 			}
 			else 
 			{
@@ -1033,7 +1036,7 @@ class Parser {
 						cl=asIdent;
 				}
 			}
-			mk(EImport( eclass , cl , usedAs ? asIdent : null ));
+			mk(EImport( eclass , cl , usedAs ? asIdent : null , anPath[0] ));
 		case 'package':
 			var path = [getIdent(false)];
 			if (!path.contains(null))
