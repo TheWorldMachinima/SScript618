@@ -1,12 +1,12 @@
 {
-  "name": "SScript618",
-  "url": "https://github.com/TheWorldMachinima/SScript618",
+  "name": "ToprakScript",
+  "url": "https://github.com/TheWorldMachinima/ToprakScript",
   "license": "Apache",
-  "tags": ["hscript", "sscript"],
+  "tags": ["hscript"],
   "description": "An easy-to-use Haxe Script tool for all targets.",
   "version": "6.1.8",
   "classPath": "src/",
-  "releasenote": "SuperlativeScript release 618",
+  "releasenote": "Initial release",
   "contributors": ["TheWorldMachinima"],
   "dependencies": {
   }

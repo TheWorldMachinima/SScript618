@@ -1,4 +1,4 @@
-package tea;
+package toprak;
 
 import ex.*;
 
@@ -13,17 +13,20 @@ import sys.FileSystem;
 import sys.io.File;
 #end
 
-import tea.backend.*;
+import toprak.backend.*;
 
 using StringTools;
 
-typedef TeaCall =
+/**
+	Sugar containing several useful information.
+**/
+typedef Toprak =
 {
 	#if sys
 	/**
 		Script's file name. Will be null if the script is not from a file. 
 		
-		Also not available on JavaScript.
+		Not available on JavaScript.
 	**/
 	public var ?fileName(default, null):String;
 	#end
@@ -46,7 +49,7 @@ typedef TeaCall =
 	/**
 		Errors in this call. Will be empty if there are not any.
 	**/
-	public var exceptions(default, null):Array<SScriptException>;
+	public var exceptions(default, null):Array<ToprakException>;
 }
 
 /**
@@ -56,7 +59,7 @@ typedef TeaCall =
 @:access(hscriptBase.Interp)
 @:access(hscriptBase.Parser)
 @:keepSub
-class SScript618
+class ToprakScript
 {
 	/**
 		Ignore return value 
@@ -79,21 +82,21 @@ class SScript618
 	public static var defaultDebug(default, set):Null<Bool> = null;
 
 	/**
-		Variables in this map will be set to every SScript instance. 
+		Variables in this map will be set to every Toprak instance. 
 	**/
-	public static var globalVariables:SScriptGlobalMap = new SScriptGlobalMap();
+	public static var globalVariables:ToprakGlobalMap = new ToprakGlobalMap();
 
 	/**
-		Variables in this map will be set to every SScript instance.
+		Variables in this map will be set to every Toprak instance.
 		
 		Variables in this map CANNOT be changed in scripts, unless you remove it from the map.
 	**/
-	public static var strictGlobalVariables:SScriptStrictGlobalMap = new SScriptStrictGlobalMap();
+	public static var strictGlobalVariables:ToprakStrictGlobalMap = new ToprakStrictGlobalMap();
 	
 	/**
-		Every created SScript will be mapped to this map. 
+		Every created Toprak will be mapped to this map. 
 	**/
-	public static var global(default, null):Map<String, SScript618> = [];
+	public static var global(default, null):Map<String, ToprakScript> = [];
 	
 	static var IDCount(default, null):Int = 0;
 
@@ -161,7 +164,7 @@ class SScript618
 	public var parser(default, null):Parser;
 
 	/**
-		The script to execute. Gets set automatically if you create a `new` SScript.
+		The script to execute. Gets set automatically if you create a `new` Toprak.
 	**/
 	public var script(default, null):String = "";
 
@@ -190,7 +193,7 @@ class SScript618
 	/**
 		Latest error in this script in parsing. Will be null if there aren't any errors.
 	**/
-	public var parsingException(default, null):SScriptException;
+	public var parsingException(default, null):ToprakException;
 
 	/**
 		"Class" path of this script. Doesn't actually represent a class, it's only here for static variables.
@@ -214,10 +217,10 @@ class SScript618
 	@:noPrivateAccess var _destroyed(default, null):Bool;
 
 	/**
-		Creates a new SScript instance.
+		Creates a new ToprakScript instance.
 
 		@param scriptPath The script path or the script itself (Files are recommended).
-		@param Preset If true, SScript will set some useful variables to interp. Override `preset` to customize the settings.
+		@param Preset If true, ToprakScript will set some useful variables to interp. Override `preset` to customize the settings.
 		@param startExecute If true, script will execute itself. If false, it will not execute.	
 	**/
 	public function new(?scriptPath:String = "", ?preset:Bool = true, ?startExecute:Bool = true)
@@ -259,9 +262,9 @@ class SScript618
 			if (debugTraces && scriptPath != null && scriptPath.length > 0)
 			{
 				if (lastReportedTime == 0)
-					trace('SScript instance created instantly (0s)');
+					trace('ToprakScript instance created instantly (0s)');
 				else 
-					trace('SScript instance created in ${lastReportedTime}s');
+					trace('ToprakScript instance created in ${lastReportedTime}s');
 			}
 		}
 		catch (e)
@@ -289,7 +292,7 @@ class SScript618
 			else if (scriptFile != null && scriptFile.length > 0)
 				scriptFile;
 			else 
-				"SScript";
+				"ToprakScript";
 		};
 
 		if (script != null && script.length > 0)
@@ -318,7 +321,7 @@ class SScript618
 		@param obj The object to set.
 		@return Returns this instance for chaining.
 	**/
-	public function set(key:String, obj:Dynamic):SScript618
+	public function set(key:String, obj:Dynamic):ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -361,7 +364,7 @@ class SScript618
 		@param cl The class to set.
 		@return this instance for chaining.
 	**/
-	public function setClass(cl:Class<Dynamic>):SScript618
+	public function setClass(cl:Class<Dynamic>):ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -396,7 +399,7 @@ class SScript618
 		@param cl The class to set.
 		@return this instance for chaining.
 	**/
-	public function setClassString(cl:String):SScript618
+	public function setClassString(cl:String):ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -423,7 +426,7 @@ class SScript618
 	}
 
 	/**
-		A special object is the object that'll get checked if a variable is not found in a Tea.
+		A special object is the object that'll get checked if a variable is not found in a Toprak instance.
 		
 		Special object can't be basic types like Int, String, Float, Array and Bool.
 
@@ -433,7 +436,7 @@ class SScript618
 		@param exclusions Optional array of fields you want it to be excluded.
 		@return Returns this instance for chaining.
 	**/
-	public function setSpecialObject(obj:Dynamic, ?includeFunctions:Bool = true, ?exclusions:Array<String>):SScript618
+	public function setSpecialObject(obj:Dynamic, ?includeFunctions:Bool = true, ?exclusions:Array<String>):ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -488,7 +491,7 @@ class SScript618
 		@param key Variable name to remove.
 		@return Returns this instance for chaining.
 	**/
-	public function unset(key:String):SScript618
+	public function unset(key:String):ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -540,13 +543,13 @@ class SScript618
 
 		@param func Function name in script file. 
 		@param args Arguments for the `func`. If the function does not require arguments, leave it null.
-		@return Returns an unique structure that contains called function, returned value etc. Returned value is at `returnValue`.
+		@return Returns a sugar filled with called function, returned value etc. Returned value is at `returnValue`.
 	**/
-	public function call(func:String, ?args:Array<Dynamic>):TeaCall
+	public function call(func:String, ?args:Array<Dynamic>):Toprak
 	{
 		if (_destroyed)
 			return {
-				exceptions: [new SScriptException(new Exception((if (scriptFile != null && scriptFile.length > 0) scriptFile else "SScript instance") + " is destroyed."))],
+				exceptions: [new ToprakException(new Exception((if (scriptFile != null && scriptFile.length > 0) scriptFile else "Toprak instance") + " is destroyed."))],
 				calledFunction: func,
 				succeeded: false,
 				returnValue: null
@@ -554,7 +557,7 @@ class SScript618
 
 		if (!active)
 			return {
-				exceptions: [new SScriptException(new Exception((if (scriptFile != null && scriptFile.length > 0) scriptFile else "SScript instance") + " is not active."))],
+				exceptions: [new ToprakException(new Exception((if (scriptFile != null && scriptFile.length > 0) scriptFile else "Toprak instance") + " is not active."))],
 				calledFunction: func,
 				succeeded: false,
 				returnValue: null
@@ -563,7 +566,7 @@ class SScript618
 		var time:Float = Timer.stamp();
 
 		var scriptFile:String = if (scriptFile != null && scriptFile.length > 0) scriptFile else "";
-		var caller:TeaCall = {
+		var caller:Toprak = {
 			exceptions: [],
 			calledFunction: func,
 			succeeded: false,
@@ -580,7 +583,7 @@ class SScript618
 		function pushException(e:String)
 		{
 			if (!pushedExceptions.contains(e))
-				caller.exceptions.push(new SScriptException(new Exception(e)));
+				caller.exceptions.push(new ToprakException(new Exception(e)));
 			
 			pushedExceptions.push(e);
 		}
@@ -618,7 +621,7 @@ class SScript618
 				if (scriptFile != null && scriptFile.length > 1)
 					pushException('Function $func does not exist in $scriptFile.');
 				else 
-					pushException('Function $func does not exist in SScript instance.');
+					pushException('Function $func does not exist in Toprak instance.');
 			}
 		}
 		else 
@@ -641,7 +644,7 @@ class SScript618
 			catch (e)
 			{
 				caller = oldCaller;
-				caller.exceptions.insert(0, new SScriptException(e));
+				caller.exceptions.insert(0, new ToprakException(e));
 			}
 		}
 		lastReportedCallTime = Timer.stamp() - time;
@@ -654,7 +657,7 @@ class SScript618
 
 		@return Returns this instance for chaining.
 	**/
-	public function clear():SScript618
+	public function clear():ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -707,7 +710,7 @@ class SScript618
 		setClass(Math);
 		setClass(Reflect);
 		setClass(Std);
-		setClass(SScript618);
+		setClass(ToprakScript);
 		setClass(StringTools);
 		setClass(Type);
 
@@ -797,7 +800,7 @@ class SScript618
 		@param origin Optional origin to use for this script, it will appear on traces.
 		@return Returns this instance for chaining. Will return `null` if failed.
 	**/
-	public function doString(string:String, ?origin:String):SScript618
+	public function doString(string:String, ?origin:String):ToprakScript
 	{
 		if (_destroyed)
 			return null;
@@ -826,7 +829,7 @@ class SScript618
 			if (og == null || og.length < 1)
 				og = customOrigin;
 			if (og == null || og.length < 1)
-				og = "SScript";
+				og = "ToprakScript";
 
 			if (!active || interp == null)
 				return null;
@@ -866,9 +869,9 @@ class SScript618
 			if (debugTraces)
 			{
 				if (lastReportedTime == 0)
-					trace('SScript instance created instantly (0s)');
+					trace('Toprak instance created instantly (0s)');
 				else 
-					trace('SScript instance created in ${lastReportedTime}s');
+					trace('Toprak instance created in ${lastReportedTime}s');
 			}
 		}
 		catch (e) lastReportedTime = -1;
@@ -884,7 +887,7 @@ class SScript618
 		if (scriptFile != null && scriptFile.length > 0)
 			return scriptFile;
 
-		return "[SScript SScript]";
+		return "[Toprak Toprak]";
 	}
 
 	#if (sys)
@@ -908,7 +911,7 @@ class SScript618
 		@return An empty array.
 	**/
 	#end
-	public static function listScripts(path:String, ?extensions:Array<String>):Array<SScript618>
+	public static function listScripts(path:String, ?extensions:Array<String>):Array<ToprakScript>
 	{
 		if (!path.endsWith('/'))
 			path += '/';
@@ -916,7 +919,7 @@ class SScript618
 		if (extensions == null || extensions.length < 1)
 			extensions = ['hx'];
 
-		var list:Array<SScript618> = [];
+		var list:Array<ToprakScript> = [];
 		#if sys
 		if (FileSystem.exists(path) && FileSystem.isDirectory(path))
 		{
@@ -933,7 +936,7 @@ class SScript618
 					}
 				}
 				if (hasExtension && FileSystem.exists(path + i))
-					list.push(new SScript618(path + i));
+					list.push(new ToprakScript(path + i));
 			}
 		}
 		#end

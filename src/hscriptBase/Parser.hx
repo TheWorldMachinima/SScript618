@@ -48,7 +48,7 @@ enum Token {
 }
 
 @:keep
-@:access(tea.SScript618)
+@:access(toprak.ToprakScript)
 class Parser {
 
 	// config / variables
@@ -164,7 +164,7 @@ class Parser {
 			idents[identChars.charCodeAt(i)] = true;
 	}
 
-	public function parseString( s : String, ?origin : String = "SScript" ) {
+	public function parseString( s : String, ?origin : String = "ToprakScript" ) {
 		initParser(origin);
 		input = s;
 		readPos = 0;

@@ -1,8 +1,8 @@
-package tea.backend;
+package toprak.backend;
 
 import haxe.Exception;
 
-abstract SScriptException(Exception)
+abstract ToprakException(Exception)
 {
     /**
 		Exception message.
@@ -13,8 +13,8 @@ abstract SScriptException(Exception)
         this = exception;
   
     @:from
-    public static function fromException(exception:Exception):SScriptException
-        return new SScriptException(exception);
+    public static function fromException(exception:Exception):ToprakException
+        return new ToprakException(exception);
 
     /**
 		Returns exception message.

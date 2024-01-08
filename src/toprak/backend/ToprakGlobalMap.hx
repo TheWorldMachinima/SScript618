@@ -1,4 +1,4 @@
-package tea.backend;
+package toprak.backend;
 
 import haxe.ds.StringMap;
 import haxe.ds.IntMap;
@@ -6,17 +6,17 @@ import haxe.ds.ObjectMap;
 import haxe.ds.EnumValueMap;
 import haxe.Constraints.IMap;
 
-import tea.SScript618;
+import toprak.ToprakScript;
 
 /**
     A custom type of map which sets values to scripts in global.
 **/
-typedef SScriptGlobalMap = SScriptTypedGlobalMap<String, Dynamic>;
+typedef ToprakGlobalMap = ToprakTypedGlobalMap<String, Dynamic>;
 
 @:transitive
 @:multiType(@:followWithAbstracts K)
-@:access(tea.SScript618)
-abstract SScriptTypedGlobalMap<K, V>(IMap<K, V>) 
+@:access(toprak.ToprakScript)
+abstract ToprakTypedGlobalMap<K, V>(IMap<K, V>) 
 {
 	public function new();
 
@@ -26,7 +26,7 @@ abstract SScriptTypedGlobalMap<K, V>(IMap<K, V>)
         
         var key:String = cast key;
         var value:Dynamic = cast value;
-        for (i in SScript618.global)
+        for (i in ToprakScript.global)
         {
             if (!i._destroyed)
                 i.set(key, value);
@@ -42,9 +42,9 @@ abstract SScriptTypedGlobalMap<K, V>(IMap<K, V>)
 	public inline function remove(key:K)
 	{
 		var k:String = cast key;
-		for (i in SScript618.global)
+		for (i in ToprakScript.global)
         {
-            for (i in SScript618.global)
+            for (i in ToprakScript.global)
 			{
 				if (!i._destroyed)
 					i.unset(k);
@@ -77,7 +77,7 @@ abstract SScriptTypedGlobalMap<K, V>(IMap<K, V>)
 		this.set(k, v);
         var key:String = cast k;
         var value:Dynamic = cast v;
-        for (i in SScript618.global)
+        for (i in ToprakScript.global)
         {
             if (!i._destroyed)
                 i.set(key, value);
@@ -97,12 +97,12 @@ abstract SScriptTypedGlobalMap<K, V>(IMap<K, V>)
 	@:to static inline function toObjectMap<K:{}, V>(t:IMap<K, V>):ObjectMap<K, V> 
 		return new ObjectMap<K, V>();
 
-	@:from static inline function fromStringMap<V>(map:StringMap<V>):SScriptTypedGlobalMap<String, V> 
+	@:from static inline function fromStringMap<V>(map:StringMap<V>):ToprakTypedGlobalMap<String, V> 
 		return cast map;
 
-	@:from static inline function fromIntMap<V>(map:IntMap<V>):SScriptTypedGlobalMap<Int, V> 
+	@:from static inline function fromIntMap<V>(map:IntMap<V>):ToprakTypedGlobalMap<Int, V> 
 		return cast map;
 
-	@:from static inline function fromObjectMap<K:{}, V>(map:ObjectMap<K, V>):SScriptTypedGlobalMap<K, V> 
+	@:from static inline function fromObjectMap<K:{}, V>(map:ObjectMap<K, V>):ToprakTypedGlobalMap<K, V> 
 		return cast map;
 }

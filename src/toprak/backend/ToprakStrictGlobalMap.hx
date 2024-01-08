@@ -1,4 +1,4 @@
-package tea.backend;
+package toprak.backend;
 
 import haxe.ds.StringMap;
 import haxe.ds.IntMap;
@@ -6,18 +6,18 @@ import haxe.ds.ObjectMap;
 import haxe.ds.EnumValueMap;
 import haxe.Constraints.IMap;
 
-import tea.SScript618;
+import toprak.ToprakScript;
 
 /**
     A custom type of map which sets values to scripts in global.
 **/
-typedef SScriptStrictGlobalMap = SScriptStrictTypedGlobalMap<String, Dynamic>;
+typedef ToprakStrictGlobalMap = ToprakStrictTypedGlobalMap<String, Dynamic>;
 
 @:transitive
 @:multiType(@:followWithAbstracts K)
 @:access(hscriptBase.Interp)
-@:access(tea.SScript618)
-abstract SScriptStrictTypedGlobalMap<K, V>(IMap<K, V>) 
+@:access(toprak.ToprakScript)
+abstract ToprakStrictTypedGlobalMap<K, V>(IMap<K, V>) 
 {
 	public function new();
 
@@ -27,7 +27,7 @@ abstract SScriptStrictTypedGlobalMap<K, V>(IMap<K, V>)
         
         var key:String = cast key;
         var value:Dynamic = cast value;
-        for (i in SScript618.global)
+        for (i in ToprakScript.global)
         {
             if (!i._destroyed && i.interp != null)
                 i.interp.finalVariables[key] = value;
@@ -43,9 +43,9 @@ abstract SScriptStrictTypedGlobalMap<K, V>(IMap<K, V>)
 	public inline function remove(key:K)
 	{
 		var k:String = cast key;
-		for (i in SScript618.global)
+		for (i in ToprakScript.global)
         {
-            for (i in SScript618.global)
+            for (i in ToprakScript.global)
 			{
 				if (!i._destroyed && i.interp != null)
 					i.interp.finalVariables.remove(k);
@@ -78,9 +78,9 @@ abstract SScriptStrictTypedGlobalMap<K, V>(IMap<K, V>)
 		this.set(k, v);
         var key:String = cast k;
         var value:Dynamic = cast v;
-        for (i in SScript618.global)
+        for (i in ToprakScript.global)
         {
-            for (i in SScript618.global)
+            for (i in ToprakScript.global)
 			{
 				if (!i._destroyed && i.interp != null)
 					i.interp.finalVariables[key] = value;
@@ -101,12 +101,12 @@ abstract SScriptStrictTypedGlobalMap<K, V>(IMap<K, V>)
 	@:to static inline function toObjectMap<K:{}, V>(t:IMap<K, V>):ObjectMap<K, V> 
 		return new ObjectMap<K, V>();
 
-	@:from static inline function fromStringMap<V>(map:StringMap<V>):SScriptStrictTypedGlobalMap<String, V> 
+	@:from static inline function fromStringMap<V>(map:StringMap<V>):ToprakStrictTypedGlobalMap<String, V> 
 		return cast map;
 
-	@:from static inline function fromIntMap<V>(map:IntMap<V>):SScriptStrictTypedGlobalMap<Int, V> 
+	@:from static inline function fromIntMap<V>(map:IntMap<V>):ToprakStrictTypedGlobalMap<Int, V> 
 		return cast map;
 
-	@:from static inline function fromObjectMap<K:{}, V>(map:ObjectMap<K, V>):SScriptStrictTypedGlobalMap<K, V> 
+	@:from static inline function fromObjectMap<K:{}, V>(map:ObjectMap<K, V>):ToprakStrictTypedGlobalMap<K, V> 
 		return cast map;
 }

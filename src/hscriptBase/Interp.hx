@@ -25,7 +25,7 @@ import haxe.ds.*;
 import haxe.PosInfos;
 import hscriptBase.Expr;
 import haxe.Constraints;
-import tea.SScript618;
+import toprak.ToprakScript;
 
 using StringTools;
 
@@ -36,7 +36,7 @@ private enum Stop {
 }
 
 @:keepSub
-@:access(tea.SScript618)
+@:access(toprak.ToprakScript)
 class Interp {
 
 	static var classes:Array<String> = [];
@@ -65,7 +65,7 @@ class Interp {
 
 	var privateAccess : Bool = false;
 
-	var script : SScript618;
+	var script : ToprakScript;
 
 	var curExpr : Expr;
 
@@ -78,6 +78,8 @@ class Interp {
 
 	var hasPrivateAccess : Bool = false;
 	var noPrivateAccess : Bool = false;
+
+	var strictVar : Bool = false;
 
 	public inline function setScr(s)
 	{
@@ -125,7 +127,7 @@ class Interp {
 	public function posInfos(): PosInfos {
 		if(curExpr != null)
 			return cast { fileName : curExpr.origin, lineNumber : curExpr.line };
-		return cast { fileName : "SScript", lineNumber : 0 };
+		return cast { fileName : "ToprakScript", lineNumber : 0 };
 	}
 
 	var inFunc : Bool = false;
@@ -554,7 +556,7 @@ class Interp {
 				else if (script.scriptFile != null && script.scriptFile.length > 0)
 					script.scriptFile;
 				else 
-					"SScript";
+					"ToprakScript";
 			} , pmin : 0 , pmax : 0 , line : 0 , e : null };
 		var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line);
 		if( rethrow ) this.rethrow(e) else throw e;
@@ -570,6 +572,9 @@ class Interp {
 	}
 
 	function resolve( id : String ) : Dynamic {
+		@:privateAccess if( strictVar && Parser.notAllowedFieldNames.contains(id) )
+			error(EUnexpected(id));
+
 		var l = locals.get(id);
 		if( l != null )
 			return l.r;
@@ -607,7 +612,7 @@ class Interp {
 				var v = {};
 				STATICPACKAGES.set(cl,v);
 			}
-			return null;
+			return if( strictVar ) error(EUnexpected("class")) else null;
 		case EPublic(e):
 			if( inPublic && !inStatic )
 				error(ECustom('Unexpected public'));
@@ -616,7 +621,7 @@ class Interp {
 			inPublic = true;
 			expr(e);
 			inPublic = false;
-			return null;
+			return if( strictVar ) error(EUnexpected("public")) else null;
 		case EPrivate(e):
 			if( inPrivate && !inStatic )
 				error(ECustom('Unexpected private'));
@@ -625,7 +630,7 @@ class Interp {
 			inPrivate = true;
 			expr(e);
 			inPrivate = false;
-			return null;
+			return if( strictVar ) error(EUnexpected("class")) else null;
 		case EStatic(e,inPublic):
 			inStatic = true;
 			if( inPublic != null )
@@ -635,7 +640,7 @@ class Interp {
 			}
 			expr(e);
 			inStatic = false;
-			return null;
+			return if( strictVar ) error(EUnexpected("static")) else null;
 		case EConst(c):
 			switch( c ) {
 			case CInt(v): return v;
@@ -646,7 +651,10 @@ class Interp {
 			#end
 			}
 		case EIdent(id):
-			return resolve(id);
+			strictVar = true;
+			var e = resolve(id);
+			strictVar = false;
+			return e;
 		case EVar(n,f,t,e):
 			if(t!=null&&e!=null)
 			{
@@ -660,7 +668,9 @@ class Interp {
 				if(!Tools.compatibleWithEachOther(ftype, stype)&&ftype!=stype&&ftype!='Anon'&&!Tools.compatibleWithEachOtherObjects(cl,clN)){error(EUnmatchingType(ftype, stype, n));}
 			}
 
+			strictVar = true;
 			var expr1 : Dynamic = e == null ? null : expr(e);
+			strictVar = false;
 			var name = null;
 			var isMap = t != null && e != null && (switch t {
 				case CTPath(path,_):
@@ -706,11 +716,11 @@ class Interp {
 				{
 					if( !pushedVars.contains(n) ) {
 						pushedVars.push(n);
-						SScript618.strictGlobalVariables.set(n,expr1);
+						ToprakScript.strictGlobalVariables.set(n,expr1);
 					}
 				}
 			}
-			return null;
+			return if( strictVar ) error(EUnexpected(f ? "final" : "var")) else null;
 		case EParent(e):
 			return expr(e);
 		case EBlock(exprs):
@@ -755,30 +765,34 @@ class Interp {
 				error(EInvalidOp(op));
 			}
 		case ECall(e,params):
-			var id = switch( e.e ){
-				case EIdent(v):
-					v;
-				default: null;
-			}
-
 			var args = new Array();
 			for( p in params )
 				args.push(expr(p));
 
 			switch( Tools.expr(e) ) {
 			case EField(e,f):
+				strictVar = true;
 				var obj = expr(e);
+				strictVar = false;
 				if( obj == null ) error(EInvalidAccess(f));
 				return fcall(obj,f,args);
 			default:
-				return call(null,expr(e),args);
+				strictVar = true;
+				var e = expr(e);
+				strictVar = false;
+				return call(null,e,args);
 			}
 		case EIf(econd,e1,e2):
-			return if( expr(econd) == true ) expr(e1) else if( e2 == null ) null else expr(e2);
+			strictVar = true;
+			var econd = expr(econd);
+			strictVar = false;
+			return if( econd ) expr(e1) else if( e2 == null ) null else expr(e2);
 		case EWhile(econd,e):
+			if( strictVar ) return error(EUnexpected("while"));
 			whileLoop(econd,e);
 			return null;
 		case EDoWhile(econd,e):
+			if( strictVar ) return error(EUnexpected("do"));
 			doWhileLoop(econd,e);
 			return null;
 		case EFor(v,it,e):
@@ -848,12 +862,12 @@ class Interp {
 				#end
 			}
 
-			return null;
+			return if( strictVar ) error(EUnexpected("import")) else null;
 		case EImport( e, c , _ ):
 			if( c != null && e != null )
 				finalVariables.set( c , e );
 
-			return null;
+			return if( strictVar ) error(EUnexpected("import")) else null;
 		case EUsing( e, c ):
 			var stringTools = c == 'StringTools' && e == StringTools;
 
@@ -862,13 +876,13 @@ class Interp {
 			if( stringTools )
 				usingStringTools = true;
 
-			return null;
+			return if( strictVar ) error(EUnexpected("using")) else null;
 		case EPackage(p):
 			if( p == null )
 				error(ECustom("Unexpected package"));
 
 			@:privateAccess script.setPackagePath(p);
-			return null;
+			return if( strictVar ) error(EUnexpected("package")) else null;
 		case EFunction(params,fexpr,name,_):
 			var capturedLocals = duplicate(locals);
 			var me = this;
@@ -966,7 +980,7 @@ class Interp {
 						{
 							if( !pushedVars.contains(name) ) {
 								pushedVars.push(name);
-								SScript618.strictGlobalVariables.set(name,f);
+								ToprakScript.strictGlobalVariables.set(name,f);
 							}
 						}
 					}
@@ -1113,6 +1127,28 @@ class Interp {
 
 	function doWhileLoop(econd,e) {
 		var old = declared.length;
+		strictVar = true;
+		var ec : Dynamic = expr(econd);
+		function checkEC()
+		{
+			if( ec != null && !Std.isOfType(ec, Bool) ) {
+				var n = Type.getEnumName(ec);
+				if( n == null ) n = Type.getClassName(ec);
+				if( n == null ) {
+					if( Std.isOfType(ec,Int) )
+						n = 'Int';
+					else if ( Std.isOfType(ec,Float) )
+						n = 'Float';
+					else if ( Std.isOfType(ec,String) )
+						n = 'String';
+					else if ( Std.isOfType(ec,Array) )
+						n = 'Array';
+				}
+				if( n != null ) error(ECustom(n + ' should be Bool'));
+				else error(ECustom('Invalid do while expression (should be Bool)'));
+			}
+		}
+		checkEC();
 		do {
 			try {
 				expr(e);
@@ -1123,14 +1159,39 @@ class Interp {
 				case SReturn: throw err;
 				}
 			}
+			ec = expr(econd);
+			checkEC();
 		}
-		while( expr(econd) == true );
+		while( ec );
+		strictVar = false;
 		restore(old);
 	}
 
 	function whileLoop(econd,e) {
 		var old = declared.length;
-		while( expr(econd) == true ) {
+		strictVar = true;
+		var ec : Dynamic = expr(econd);
+		function checkEC()
+		{
+			if( ec != null && !Std.isOfType(ec, Bool) ) {
+				var n = Type.getEnumName(ec);
+				if( n == null ) n = Type.getClassName(ec);
+				if( n == null ) {
+					if( Std.isOfType(ec,Int) )
+						n = 'Int';
+					else if ( Std.isOfType(ec,Float) )
+						n = 'Float';
+					else if ( Std.isOfType(ec,String) )
+						n = 'String';
+					else if ( Std.isOfType(ec,Array) )
+						n = 'Array';
+				}
+				if( n != null ) error(ECustom(n + ' should be Bool'));
+				else error(ECustom('Invalid do while expression (should be Bool)'));
+			}
+		}
+		checkEC();
+		while( ec ) {
 			try {
 				expr(e);
 			} catch( err : Stop ) {
@@ -1140,7 +1201,10 @@ class Interp {
 				case SReturn: throw err;
 				}
 			}
+			ec = expr(econd);
+			checkEC();
 		}
+		strictVar = false;
 		restore(old);
 	}
 
@@ -1157,6 +1221,7 @@ class Interp {
 	function forLoop(n,it,e) {
 		var old = declared.length;
 		declared.push({ n : n, old : locals.get(n) });
+		strictVar = true;
 		var it = makeIterator(expr(it));
 		while( it.hasNext() ) {
 			locals.set(n,{ r : it.next() });
@@ -1170,6 +1235,7 @@ class Interp {
 				}
 			}
 		}
+		strictVar = false;
 		restore(old);
 	}
 
